@@ -1,9 +1,11 @@
 package com.yl.practice.thread.pool;
 
+import com.yl.practice.service.TestSyncHandDataService;
 import com.yl.practice.thread.ThreadRejectedExecutionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 
@@ -38,6 +40,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  */
 
 @Configuration
+@EnableAsync
 public class ThreadPoolConfig {
 
     @Value("${default.thread.core.pool.size}")
@@ -75,5 +78,10 @@ public class ThreadPoolConfig {
         threadPoolTaskExecutor.setKeepAliveSeconds(keepAliveSeconds);
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
+    }
+
+    @Bean
+    public TestSyncHandDataService testSyncHandDataService() {
+        return new TestSyncHandDataService();
     }
 }

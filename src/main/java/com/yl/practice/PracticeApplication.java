@@ -5,6 +5,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.yl.practice.service.SentinelService;
+import com.yl.practice.service.TestSyncHandDataService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.PostConstruct;
@@ -34,6 +36,9 @@ public class PracticeApplication {
 
 	@Autowired
 	private ThreadPoolTaskExecutor defaultThreadPoolTaskExecutor;
+
+	@Autowired
+	private TestSyncHandDataService testSyncHandDataService;
 
 
 
@@ -69,7 +74,9 @@ public class PracticeApplication {
 		LOGGER.info("hahhaahhahha");
 
 	}
-
+	/**
+	 * springboot使用线程池方案1:线程池管理
+	 */
 	@PostConstruct
 	public void run() {
 //		for (int i = 0; i < 10; i++) {
@@ -81,41 +88,80 @@ public class PracticeApplication {
 		for (int i =0;i< 100;i++) {
 			objectList.add(i);
 		}
-
-		int taskTotal = 3;
-		int handlerNum = 10;
-		if (objectList.size() > handlerNum) {
-			final List<Future<String>> results = new ArrayList<>();
-			final AtomicInteger taskCounter = new AtomicInteger(0);
-			List<Object> objects = new ArrayList<>();
-			for (Object object : objectList) {
-				objects.add(object);
-				if (objects.size() == handlerNum) {
-					results.add(process(new ArrayList<>(objects),taskCounter,taskTotal));
-					objects.clear();
-				}
-			}
-			if (CollectionUtils.isNotEmpty(objects)) {
-				handData(objects);
-			}
-
-			//结果
-			for (final Future<String> result : results) {
-				try {
-					result.get();
-				} catch (InterruptedException | ExecutionException e) {
-					log.error("processDatas thread happened error!", e);
-				}
-			}
-		} else {
-			//单线程处理
-			handData(objectList);
-		}
+//		int taskTotal = 3;
+//		int handlerNum = 10;
+//		if (objectList.size() > handlerNum) {
+//			final List<Future<String>> results = new ArrayList<>();
+//			final AtomicInteger taskCounter = new AtomicInteger(0);
+//			List<Object> objects = new ArrayList<>();
+//			for (Object object : objectList) {
+//				objects.add(object);
+//				if (objects.size() == handlerNum) {
+//					results.add(process(new ArrayList<>(objects),taskCounter,taskTotal));
+//					objects.clear();
+//				}
+//			}
+//			if (CollectionUtils.isNotEmpty(objects)) {
+//				handData(objects);
+//			}
+//
+//			//结果
+//			for (final Future<String> result : results) {
+//				try {
+//					result.get();
+//				} catch (InterruptedException | ExecutionException e) {
+//					log.error("processDatas thread happened error!", e);
+//				}
+//			}
+//		} else {
+//			//单线程处理
+//			handData(objectList);
+//		}
 
 
 
 
 	}
+
+	/**
+	 * springboot使用线程池方案2：@Async
+	 */
+	@PostConstruct
+	public void run2() {
+		//最大线程数
+		int threadNum = 4;
+
+		List<Object> objectList = new ArrayList<>();
+		for (int i =0;i< 100;i++) {
+			objectList.add(i);
+		}
+
+		int size = objectList.size();
+		if (threadNum > size) {
+			threadNum = size;
+		}
+
+		int start,end;
+
+		final List<Future<String>> results = new ArrayList<>();
+		for (int i = 0; i < threadNum; i++) {
+			start = size / threadNum * i;
+			end = size / threadNum * (i+1);
+			if (i == threadNum -1) {
+				end = size;
+			}
+			List<Object> objects = objectList.subList(start,end);
+			results.add(testSyncHandDataService.handDataAsync(objects));
+		}
+		for (final Future<String> result : results) {
+			try {
+				result.get();
+			} catch (InterruptedException | ExecutionException e) {
+				log.error("processDatas thread happened error!", e);
+			}
+		}
+	}
+
 
 
 	private void handData(List<Object> objects) {
