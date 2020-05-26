@@ -1,9 +1,13 @@
 package com.yl.practice.config;
 
+import com.yl.practice.domain.TestChild.ParentAction;
+import com.yl.practice.domain.TestChild.ParentHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
+
+import java.util.List;
 
 /**
  * @author yangli
@@ -20,5 +24,10 @@ public class PropertiesConfig {
         PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
         propertyPlaceholderConfigurer.setLocation(resource);
         return propertyPlaceholderConfigurer;
+    }
+
+    @Bean
+    public ParentHandler getParentHandler(List<ParentAction> parentActionList) {
+        return new ParentHandler(parentActionList);
     }
 }

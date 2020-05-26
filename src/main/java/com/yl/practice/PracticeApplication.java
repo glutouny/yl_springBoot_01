@@ -14,12 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -33,6 +39,12 @@ public class PracticeApplication {
 
     @Autowired
     private SentinelService sentinelService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     private ThreadPoolTaskExecutor defaultThreadPoolTaskExecutor;
@@ -70,7 +82,21 @@ public class PracticeApplication {
 
     @PostConstruct
     public void run1() {
-        LOGGER.info("hahhaahhahha");
+        List<String> strings  = new ArrayList<>();
+        strings.add("do");
+        strings.add("co");
+        String poscode = "kf";
+        List<Object> result = stringRedisTemplate.executePipelined(new RedisCallback<Double>() {
+            @Override
+            public Double doInRedis(RedisConnection connection) throws DataAccessException {
+                connection.openPipeline();
+                for (String string : strings) {
+                    connection.zScore(string.getBytes(), poscode.getBytes());
+                }
+                return null;
+            }
+        });
+        System.out.println("result:"+(Double)result.get(0));
 
     }
 

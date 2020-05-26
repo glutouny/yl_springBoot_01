@@ -39,6 +39,7 @@ public class ChildHandlerProcess implements CommandLineRunner {
     private void scanChildHandler() {
         Map<String, Object> map = ApplicationContextHelper.getContext().getBeansWithAnnotation(ChildHandler.class);
         LOGGER.info("===map===:"+map.size());
+
         for (Object service : map.values()) {
             if (service instanceof ParentAction) {
                 ChildHandler childHandler = service.getClass().getAnnotation(ChildHandler.class);

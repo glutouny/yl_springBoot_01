@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
  * @DATE 2019/12/27  10:48
  */
 @Component
-@ChildHandler(ParentAction.CHILD_ACTION1_LEVEL)
+@ChildHandler(ParentAction.CHILD_ACTION3_LEVEL)
 public class ChildAction1 extends ParentAction {
 
     @Override
@@ -21,4 +21,8 @@ public class ChildAction1 extends ParentAction {
         return "ChildAction1: "+var;
     }
 
+    @Override
+    protected int level() {
+        return 1;
+    }
 }

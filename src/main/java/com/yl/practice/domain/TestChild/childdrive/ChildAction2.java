@@ -20,5 +20,8 @@ public class ChildAction2 extends ParentAction {
         return "ChildAction2: "+var;
     }
 
-
+    @Override
+    protected int level() {
+        return 2;
+    }
 }

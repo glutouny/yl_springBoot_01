@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @DATE 2019/12/27  10:48
  */
 @Component
-@ChildHandler(ParentAction.CHILD_ACTION3_LEVEL)
+@ChildHandler(ParentAction.CHILD_ACTION1_LEVEL)
 public class ChildAction3 extends ParentAction {
 
     @Override
@@ -19,5 +19,8 @@ public class ChildAction3 extends ParentAction {
         return "ChildAction3: "+var;
     }
 
-
+    @Override
+    protected int level() {
+        return 3;
+    }
 }
